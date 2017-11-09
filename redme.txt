@@ -97,6 +97,7 @@ public class CurrencyExchangeDaoTest {
     } catch (ParseException e) {
 	myCHange
 lalala
+last change TYPO
       throw new IllegalArgumentException(e);
     }
   }
