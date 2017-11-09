@@ -1,2 +1,101 @@
-some cool app
-new message
+package my.commit-pack;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.hibernate.SessionFactory;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
+
+@Transactional
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration("/ ")
+public class CurrencyExchangeDaoTest {
+  @Autowired
+  private CurrencyExchangeDao currencyExchangeDao;
+
+  @Autowired
+  private SessionFactory sessionFactory;
+
+  private BigDecimal _7 = new BigDecimal("0.7");
+  private BigDecimal _8 = new BigDecimal("0.8");
+  private CurrencyExchange eurAsOfSep1;
+  private CurrencyExchange eurAsOfSep5;
+
+  @Before
+  public void setup() {
+    eurAsOfSep1 = createCurrencyExchange("EUR", "2013-09-01", _7);
+    eurAsOfSep5 = createCurrencyExchange("EUR", "2013-09-05", _8);
+
+    sessionFactory.getCurrentSession().flush();
+    sessionFactory.getCurrentSession().clear();
+  }
+
+  @Test
+  public void shoudReturnCurrencyExchangeWithSpecifiedCode() {
+    // insert a few other currencies
+    createCurrencyExchange("CAD", "2013-09-01", new BigDecimal("0.97"));
+    createCurrencyExchange("HUF", "2013-09-01", new BigDecimal("0.0045"));
+
+    CurrencyExchange exchange = currencyExchangeDao.getCurrencyExchange("EUR", parseDate("2013-09-02"));
+
+    // make sure we got EUR, as requested
+    assertThat(exchange.getId().getCurrencyCode(), is("EUR"));
+  }
+
+  @Test
+  public void shoudReturnCurrencyExchangeAsOfSpecifiedDate() {
+    CurrencyExchange exchange = currencyExchangeDao.getCurrencyExchange("EUR", parseDate("2013-09-02"));
+    assertThat(exchange, is(eurAsOfSep1));
+
+    exchange = currencyExchangeDao.getCurrencyExchange("EUR", parseDate("2013-09-10"));
+    assertThat(exchange, is(eurAsOfSep5));
+  }
+
+  @Test
+  public void effectiveDateShouldApplyAtMidnight() {
+  }
+
+  @Test
+  public void shouldReturnNullIfCurrencyCodeIsNull() {
+  }
+
+  @Test
+  public void shouldReturnNullIfDateIsNull() {
+  }
+
+  @Test
+  public void shouldReturnNullIfCurrencyIsNotKnown() {
+  }
+
+  @Test
+  public void shouldReturnNullIfExchangeRateForSpecifiedDateIsNotDefined() {
+  }
+
+  private CurrencyExchange createCurrencyExchange(String currencyCode, String dateStr, BigDecimal rate) {
+    CurrencyExchangeId currencyExchangeId = new CurrencyExchangeId(currencyCode, parseDate(dateStr));
+    CurrencyExchange currencyExchange = new CurrencyExchange(currencyExchangeId);
+    currencyExchange.setAlternativeExchangeRate(rate);
+    sessionFactory.getCurrentSession().save(currencyExchange);
+
+    return currencyExchange;
+  }
+
+  private Date parseDate(String yyyymmdd) {
+    try {
+      return new SimpleDateFormat("yyyy-MM-dd").parse(yyyymmdd);
+    } catch (ParseException e) {
+      throw new IllegalArgumentException(e);
+    }
+  }
+}
