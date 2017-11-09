@@ -95,6 +95,7 @@ public class CurrencyExchangeDaoTest {
     try {
       return new SimpleDateFormat("yyyy-MM-dd").parse(yyyymmdd);
     } catch (ParseException e) {
+	myCHange
       throw new IllegalArgumentException(e);
     }
   }
