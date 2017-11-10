@@ -1,7 +1,7 @@
 <<<<<<< HEAD
 package my.commit-pack;
 =======
-package com.epam.testing.session3;
+package coddddddddm.epam.testing.session3;
 >>>>>>> c1c36b66a446eb02a898950a35f2d0b71501d77b
 
 import static org.hamcrest.CoreMatchers.is;
